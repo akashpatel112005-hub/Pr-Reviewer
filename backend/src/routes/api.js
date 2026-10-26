@@ -52,7 +52,30 @@ export async function getUserRepoNames(user) {
   }
   if (ids.length === 0) return [];
 
-  const repos = await Repo.find({ installationId: { $in: ids } }).select('repoFullName').lean();
+  let repos = await Repo.find({ installationId: { $in: ids } }).select('repoFullName').lean();
+
+  // If repo documents don't exist yet in DB, sync them via GitHub App
+  if (repos.length === 0 && env.githubAppId && env.githubAppPrivateKey) {
+    try {
+      for (const instId of ids) {
+        const ghRepos = await listInstallationRepos(instId);
+        if (ghRepos && ghRepos.length > 0) {
+          const ops = ghRepos.map((r) => ({
+            updateOne: {
+              filter: { installationId: instId, repoFullName: r.full_name },
+              update: { $set: { githubRepoId: r.id, isPrivate: Boolean(r.private), enabled: true } },
+              upsert: true,
+            },
+          }));
+          await Repo.bulkWrite(ops);
+        }
+      }
+      repos = await Repo.find({ installationId: { $in: ids } }).select('repoFullName').lean();
+    } catch (err) {
+      console.warn('Could not auto-sync repos in getUserRepoNames:', err.message);
+    }
+  }
+
   return repos.map((r) => r.repoFullName);
 }
 
@@ -386,7 +409,10 @@ router.post('/repos/lookup', handle(async (req, res) => {
 router.patch('/repos/:id', handle(async (req, res) => {
   if (!OBJECT_ID.test(req.params.id)) return res.status(400).json({ error: 'Invalid repository id' });
 
-  const ids = req.user?.installationIds || [];
+  let ids = req.user?.installationIds || [];
+  if (ids.length === 0 && req.user?.login) {
+    ids = await syncUserInstallations(req.user);
+  }
   const repo = await Repo.findOne({
     _id: req.params.id,
     installationId: { $in: ids },
@@ -414,7 +440,10 @@ router.patch('/repos/:id', handle(async (req, res) => {
 router.post('/repos/:id/review-open-prs', handle(async (req, res) => {
   if (!OBJECT_ID.test(req.params.id)) return res.status(400).json({ error: 'Invalid repository id' });
 
-  const ids = req.user?.installationIds || [];
+  let ids = req.user?.installationIds || [];
+  if (ids.length === 0 && req.user?.login) {
+    ids = await syncUserInstallations(req.user);
+  }
   const repo = await Repo.findOne({
     _id: req.params.id,
     installationId: { $in: ids },

@@ -10,14 +10,15 @@ let appInstance = null;
 export function getAppPrivateKey() {
   const raw = env.githubAppPrivateKey || '';
   if (!raw) return '';
-  if (raw.includes('BEGIN')) {
-    return raw.replace(/\\n/g, '\n');
+  let key = raw;
+  if (!raw.includes('BEGIN')) {
+    try {
+      key = Buffer.from(raw, 'base64').toString('utf8');
+    } catch {
+      key = raw;
+    }
   }
-  try {
-    return Buffer.from(raw, 'base64').toString('utf8');
-  } catch {
-    return raw;
-  }
+  return key.replace(/\\n/g, '\n');
 }
 
 export function getApp() {

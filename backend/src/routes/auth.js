@@ -34,9 +34,10 @@ export function createAuthRouter({ limit = 10, windowMs = 15 * 60 * 1000, config
     }
     const state = crypto.randomBytes(24).toString('hex');
     const isProd = config.nodeEnv === 'production';
+    const sameSite = isProd ? 'None' : 'Lax';
     res.setHeader(
       'Set-Cookie',
-      `oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Max-Age=600${isProd ? '; Secure' : ''}`
+      `oauth_state=${state}; Path=/; HttpOnly; SameSite=${sameSite}; Max-Age=600${isProd ? '; Secure' : ''}`
     );
 
     const redirectUri = `${config.backendUrl}/api/auth/github/callback`;
@@ -144,17 +145,21 @@ export function createAuthRouter({ limit = 10, windowMs = 15 * 60 * 1000, config
       }
 
       // Upsert User
+      const userUpdate = {
+        $set: {
+          login: ghUser.login,
+          name: ghUser.name || ghUser.login,
+          avatarUrl: ghUser.avatar_url || '',
+          lastLoginAt: new Date(),
+        },
+      };
+      if (installationIds.length > 0) {
+        userUpdate.$addToSet = { installationIds: { $each: installationIds } };
+      }
+
       const userDoc = await User.findOneAndUpdate(
         { githubId: ghUser.id },
-        {
-          $set: {
-            login: ghUser.login,
-            name: ghUser.name || ghUser.login,
-            avatarUrl: ghUser.avatar_url || '',
-            installationIds,
-            lastLoginAt: new Date(),
-          },
-        },
+        userUpdate,
         { upsert: true, returnDocument: 'after' }
       );
 

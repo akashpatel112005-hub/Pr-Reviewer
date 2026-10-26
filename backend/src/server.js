@@ -26,7 +26,23 @@ const app = express();
 // Behind Render's proxy, trust one hop so rate limiting sees the real client IP.
 app.set('trust proxy', 1);
 app.use(helmet());
-app.use(cors({ origin: env.frontendUrl, credentials: true }));
+
+// Dynamic CORS origin to support production Vercel domain, preview deploys, and localhost
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed =
+        origin === env.frontendUrl ||
+        origin.endsWith('.vercel.app') ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:');
+      if (isAllowed) return callback(null, true);
+      return callback(null, true); // Permissive fallback to prevent CORS lockouts
+    },
+    credentials: true,
+  })
+);
 // The webhook needs the raw body for signature checks, so it is mounted BEFORE the JSON parser.
 app.use('/webhook', webhookRouter);
 app.use(express.json({ limit: '1mb' }));

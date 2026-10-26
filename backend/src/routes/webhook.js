@@ -127,14 +127,25 @@ router.post('/', express.raw({ type: () => true, limit: '5mb' }), async (req, re
         const repoDoc = await Repo.findOne({
           installationId: result.job.installationId,
           repoFullName: result.job.repoFullName,
-          enabled: true,
         });
 
-        if (!repoDoc) {
+        // If repo exists and reviews were explicitly paused by the user, ignore
+        if (repoDoc && repoDoc.enabled === false) {
           return res.status(200).json({
             status: 'ignored',
-            reason: `repository ${result.job.repoFullName} is not enabled or not connected`,
+            reason: `reviews are paused for ${result.job.repoFullName}`,
           });
+        }
+
+        // If repo document does not exist yet, auto-register it as enabled
+        if (!repoDoc) {
+          await Repo.create({
+            installationId: result.job.installationId,
+            repoFullName: result.job.repoFullName,
+            githubRepoId: payload.repository?.id || 0,
+            isPrivate: Boolean(payload.repository?.private),
+            enabled: true,
+          }).catch((e) => console.warn('Could not auto-register repo on webhook:', e.message));
         }
       } catch (err) {
         console.error('Error checking repository registration:', err.message);
