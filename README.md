@@ -4,6 +4,8 @@
 
 You install the GitHub App on your repositories, and every incoming pull request is automatically analyzed the moment it is opened or updated. Diff noise and lockfiles are stripped, modified lines are analyzed against a security and correctness rubric, line-accurate review comments are posted directly to GitHub, and an executive risk assessment report is generated on your private dashboard.
 
+- **🌐 [Live Application (Vercel)](https://pr-reviewer-kappa.vercel.app)**
+- **⚡ [Production Backend API (Render)](https://pr-reviewer-backend-fstt.onrender.com)**
 - **[Architecture](#architecture):** End-to-end system flowchart and component interaction breakdown.
 - **[Review Pipeline](#pull-request-review-pipeline):** How diffs are fetched, filtered, verified against diff hunks, scored for risk, and published.
 - **[Security & Multi-Tenancy](#security-and-multi-tenancy):** HMAC webhook verification, one-time OAuth exchange codes, and tenant-scoped isolation.
@@ -447,18 +449,26 @@ Browser ──HTTPS──▶ Vercel (React 19 SPA Build)
                                             └── GitHub App API (Octokit Webhooks & Reviews)
 ```
 
+### Production Endpoints
+
+| Service | Platform | Production URL |
+| :--- | :--- | :--- |
+| **Frontend Application** | Vercel | [https://pr-reviewer-kappa.vercel.app](https://pr-reviewer-kappa.vercel.app) |
+| **Backend API & Webhooks** | Render | [https://pr-reviewer-backend-fstt.onrender.com](https://pr-reviewer-backend-fstt.onrender.com) |
+| **Source Code Repository** | GitHub | [https://github.com/akashpatel112005-hub/Pr-Reviewer](https://github.com/akashpatel112005-hub/Pr-Reviewer) |
+
 1. **Backend on Render:**
-   - Create a Web Service connected to this repository with Root Directory `backend`.
+   - Web Service connected to repository with Root Directory `backend`.
    - Build Command: `npm install`
    - Start Command: `node src/server.js`
-   - Paste environment variables from `backend/.env`.
+   - Environment variables configured with MongoDB Atlas, Groq API, and GitHub App credentials.
 2. **Frontend on Vercel:**
-   - Import repository with Root Directory `frontend`.
-   - Set single environment variable: `VITE_API_URL=https://<your-render-service>.onrender.com`.
+   - Root Directory `frontend`, Vite application preset.
+   - Environment variable: `VITE_API_URL=https://pr-reviewer-backend-fstt.onrender.com`.
    - `vercel.json` rewrite rule automatically handles client-side SPA routing.
 3. **GitHub App Settings:**
-   - Update **Callback URL** to: `https://<your-render-service>.onrender.com/api/auth/github/callback`
-   - Update **Webhook URL** to: `https://<your-render-service>.onrender.com/webhook`
+   - **Callback URL:** `https://pr-reviewer-backend-fstt.onrender.com/api/auth/github/callback`
+   - **Webhook URL:** `https://pr-reviewer-backend-fstt.onrender.com/webhook`
 
 ---
 
