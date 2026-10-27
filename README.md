@@ -6,6 +6,7 @@ You install the GitHub App on your repositories, and every incoming pull request
 
 - **🌐 [Live Application (Vercel)](https://pr-reviewer-kappa.vercel.app)**
 - **⚡ [Production Backend API (Render)](https://pr-reviewer-backend-fstt.onrender.com)**
+- **📹 [Demo Video Walkthrough (Google Drive)](https://drive.google.com/file/d/1am5o7f8catVWfKerntiq6mrxsR7zRMWs/view?usp=sharing)**
 - **[Architecture](#architecture):** End-to-end system flowchart and component interaction breakdown.
 - **[Review Pipeline](#pull-request-review-pipeline):** How diffs are fetched, filtered, verified against diff hunks, scored for risk, and published.
 - **[Security & Multi-Tenancy](#security-and-multi-tenancy):** HMAC webhook verification, one-time OAuth exchange codes, and tenant-scoped isolation.
@@ -14,24 +15,39 @@ You install the GitHub App on your repositories, and every incoming pull request
 
 ## Contents
 
-1. [The problem](#the-problem)
-2. [Who it's for](#who-its-for)
-3. [Product philosophy](#product-philosophy)
-4. [Workflows](#workflows)
-5. [Pull request review pipeline](#pull-request-review-pipeline)
-6. [Risk scoring and summary engine](#risk-scoring-and-summary-engine)
-7. [Security and inline GitHub publishing](#security-and-inline-github-publishing)
-8. [Multi-tenant architecture and GitHub App](#multi-tenant-architecture-and-github-app)
-9. [Architecture](#architecture)
-10. [Security](#security)
-11. [Tech stack](#tech-stack)
-12. [Project structure](#project-structure)
-13. [Run locally](#run-locally)
-14. [Environment variables](#environment-variables)
-15. [Testing and test suite](#testing-and-test-suite)
-16. [Deployment](#deployment)
-17. [Limitations and trade-offs](#limitations-and-trade-offs)
-18. [Future work](#future-work)
+1. [Demo video walkthrough](#demo-video-walkthrough)
+2. [The problem](#the-problem)
+3. [Who it's for](#who-its-for)
+4. [Product philosophy](#product-philosophy)
+5. [Workflows](#workflows)
+6. [Pull request review pipeline](#pull-request-review-pipeline)
+7. [Risk scoring and summary engine](#risk-scoring-and-summary-engine)
+8. [Security and inline GitHub publishing](#security-and-inline-github-publishing)
+9. [Multi-tenant architecture and GitHub App](#multi-tenant-architecture-and-github-app)
+10. [Architecture](#architecture)
+11. [Security](#security)
+12. [Tech stack](#tech-stack)
+13. [Project structure](#project-structure)
+14. [Run locally](#run-locally)
+15. [Environment variables](#environment-variables)
+16. [Testing and test suite](#testing-and-test-suite)
+17. [Deployment](#deployment)
+18. [Limitations and trade-offs](#limitations-and-trade-offs)
+19. [Future work](#future-work)
+
+---
+
+## Demo video walkthrough
+
+A video demonstration of AI PR Reviewer walking through the end-to-end user journey, live architecture, and technical implementation:
+
+- 📹 **Watch on Google Drive:** [AI PR Reviewer Demo Walkthrough](https://drive.google.com/file/d/1am5o7f8catVWfKerntiq6mrxsR7zRMWs/view?usp=sharing)
+
+### What the walkthrough covers:
+1. **GitHub App OAuth & Multi-Tenant Dashboard:** Native authentication without personal access tokens, user-isolated repository workspaces, and on-demand review triggering.
+2. **Automated GitHub Pull Request Review:** Webhook HMAC verification, diff-hunk filtering without line hallucinations, risk level determination (`HIGH`/`MEDIUM`/`LOW`), and inline comments with actionable code fixes.
+3. **Web Dashboard & Executive Audit Report:** Plain-English summary, prioritized vulnerability ledger (Critical-first), one-click Markdown export, and background job queue lifecycle monitoring.
+4. **Architecture & Rigor:** Express 5 backend on Render, React 19 frontend on Vercel, MongoDB Atlas, Groq high-speed LLM inference, and **102 automated tests passing across 11 test suites**.
 
 ---
 
@@ -456,6 +472,7 @@ Browser ──HTTPS──▶ Vercel (React 19 SPA Build)
 | **Frontend Application** | Vercel | [https://pr-reviewer-kappa.vercel.app](https://pr-reviewer-kappa.vercel.app) |
 | **Backend API & Webhooks** | Render | [https://pr-reviewer-backend-fstt.onrender.com](https://pr-reviewer-backend-fstt.onrender.com) |
 | **Source Code Repository** | GitHub | [https://github.com/akashpatel112005-hub/Pr-Reviewer](https://github.com/akashpatel112005-hub/Pr-Reviewer) |
+| **Demo Video Walkthrough** | Google Drive | [Watch Demo Video](https://drive.google.com/file/d/1am5o7f8catVWfKerntiq6mrxsR7zRMWs/view?usp=sharing) |
 
 1. **Backend on Render:**
    - Web Service connected to repository with Root Directory `backend`.
